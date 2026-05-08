@@ -8,13 +8,17 @@ import type { StudyRecord } from '../types';
 export function usePagination(records: any) {
   const currentPage = ref(1);
   const pageSize = ref(5); // 默认每页5条
-  const isRecordsCollapsed = ref(false);
+  const isRecordsCollapsed = ref(true); // 默认折叠记录列表
 
-  // 计算总页数
-  const totalPages = computed(() => Math.ceil(records.value.length / pageSize.value));
+  // 计算总页数 - 添加空值保护
+  const totalPages = computed(() => {
+    if (!records.value) return 0;
+    return Math.ceil(records.value.length / pageSize.value);
+  });
 
-  // 当前页的记录
+  // 当前页的记录 - 添加空值保护
   const paginatedRecords = computed(() => {
+    if (!records.value) return [];
     const start = (currentPage.value - 1) * pageSize.value;
     const end = start + pageSize.value;
     return records.value.slice(start, end);

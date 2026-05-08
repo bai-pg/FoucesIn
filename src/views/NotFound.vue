@@ -1,17 +1,24 @@
 <script lang="ts" setup>
 import { useAuthStore } from "@/stores/auth";
-const { supabase } = useAuthStore();
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
-const reRoute = computed(() => {
-  if (supabase.auth.user())
-    return {
+const { supabase } = useAuthStore();
+const router = useRouter();
+
+const reRoute = ref({
+  to: "/signin",
+  text: "Sign In",
+});
+
+onMounted(async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    reRoute.value = {
       to: "/",
       text: "Go Home",
     };
-  return {
-    to: "/signin",
-    text: "Sign In",
-  };
+  }
 });
 </script>
 <template>

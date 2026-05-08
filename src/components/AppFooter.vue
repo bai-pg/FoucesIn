@@ -1,5 +1,5 @@
 <template>
-  <footer class="p-4 text-center">
+  <footer class="px-3 py-2 sm:p-4 text-center text-xs sm:text-sm">
     <div>
       Made with ❤️ by
       <a

@@ -21,18 +21,18 @@ const loading = ref(false);
 async function onSubmit() {
   const { supabase } = useAuthStore();
   loading.value = true;
-  const { error, data } = await supabase.auth.api.updateUser(resetToken, {
-    password: password.value,
-  });
-  console.log(error, data);
-
-  if (error) {
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: password.value,
+    });
+    if (error) throw error;
+    alert("密码重置成功！");
+    router.push("/signin");
+  } catch (error: any) {
     alert(error.message);
-  } else {
-    alert("successfully reset password.");
-    router.push("/");
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 }
 </script>
 <template>

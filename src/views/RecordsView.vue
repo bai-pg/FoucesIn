@@ -10,6 +10,7 @@ import EditRecordForm from './records/components/EditRecordForm.vue';
 import RecordList from './records/components/RecordList.vue';
 import ChartContainer from './records/components/ChartContainer.vue';
 import WeeklyReport from './records/components/WeeklyReport.vue';
+import { supabase } from '@/services/supabase';
 
 // 学习记录管理
 const {
@@ -30,6 +31,7 @@ const {
   cancelEdit,
   saveEdit,
   deleteRecord,
+  saveLearningNotes,
 } = useStudyRecords();
 
 // 图表管理
@@ -59,13 +61,25 @@ const {
 } = useWeeklyReport();
 
 // 组件挂载时获取记录
-onMounted(() => {
-  fetchRecords();
+onMounted(async () => {
+  try {
+    // 检查 Supabase 连接
+    const { error: connError } = await supabase.from('study_records').select('id').limit(1);
+    
+    if (connError) {
+      console.warn('Supabase 连接检查失败:', connError.message);
+      // 仍然尝试获取本地缓存或显示空状态
+    }
+    
+    await fetchRecords();
+  } catch (err) {
+    console.error('RecordsView 初始化失败:', err);
+  }
 });
 
 // 监听数据变化，自动更新图表
-watch(records, () => {
-  renderChart(records.value);
+watch(records, (newRecords) => {
+  renderChart(newRecords as any);
 }, { deep: true });
 </script>
 
@@ -151,8 +165,9 @@ watch(records, () => {
         @toggle-collapse="toggleRecordsCollapse"
         @edit="startEdit"
         @delete="deleteRecord"
-        @update:page-size="(size) => pageSize = size"
+        @update:page-size="(size: number) => pageSize = size"
         @go-to-page="goToPage"
+        @save-notes="saveLearningNotes"
       />
 
       <!-- 数据可视化图表 -->

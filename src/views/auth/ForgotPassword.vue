@@ -6,18 +6,20 @@ const loading = ref(false);
 async function onSubmit() {
   loading.value = true;
   const { supabase } = useAuthStore();
-  const { data, error } = await supabase.auth.api.resetPasswordForEmail(
-    email.value,
-    {
-      redirectTo: `${window.location.origin}/resetpassword`,
-    }
-  );
-  if (data) {
-    alert("please follow the link in your email");
-  } else if (error) {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email.value,
+      {
+        redirectTo: `${window.location.origin}/resetpassword`,
+      }
+    );
+    if (error) throw error;
+    alert("请查看邮箱，按照邮件中的链接重置密码");
+  } catch (error: any) {
     alert(error.message);
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 }
 </script>
 <template>

@@ -58,7 +58,13 @@ export function useChart() {
         right: '4%',
         bottom: '3%',
         top: '60px',
-        containLabel: true
+        containLabel: false,
+        outerBounds: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          top: '60px'
+        }
       },
       xAxis: {
         type: 'category',
@@ -145,7 +151,7 @@ export function useChart() {
   /**
    * 渲染饼图
    */
-  function renderPieChart(data: ChartDataItem[], totalDuration: number) {
+  function renderPieChart(data: ChartDataItem[], totalDuration: number, isEmpty: boolean = false) {
     const chartDom = document.getElementById('study-pie-chart');
     if (!chartDom) return;
     
@@ -154,6 +160,38 @@ export function useChart() {
     }
     
     pieChartInstance = echarts.init(chartDom);
+    
+    // 如果是空数据,显示特殊的配置
+    if (isEmpty) {
+      pieChartInstance.setOption({
+        backgroundColor: 'transparent',
+        title: {
+          text: 'NO DATA',
+          left: 'center',
+          top: 'center',
+          textStyle: {
+            fontFamily: "'Press Start 2P', 'Courier New', monospace",
+            fontSize: 16,
+            color: '#9ca3af',
+            fontWeight: 'bold'
+          }
+        },
+        graphic: {
+          type: 'text',
+          left: 'center',
+          top: 'center',
+          style: {
+            text: '📊 暂无学习记录',
+            fontFamily: "'Press Start 2P', 'Courier New', monospace",
+            fontSize: 12,
+            fill: '#9ca3af',
+            textAlign: 'center'
+          }
+        },
+        series: []
+      });
+      return;
+    }
     
     pieChartInstance.setOption({
       backgroundColor: 'transparent',
@@ -221,8 +259,6 @@ export function useChart() {
    * 渲染图表(根据当前类型)
    */
   function renderChart(records: StudyRecord[]) {
-    if (records.length === 0) return;
-    
     // 按科目汇总时长
     const subjectMap = new Map<string, number>();
     records.forEach(r => {
@@ -237,18 +273,33 @@ export function useChart() {
     const pieData: ChartDataItem[] = Array.from(subjectMap.entries()).map(([subject, duration]) => ({
       name: subject,
       value: duration,
-      percent: ((duration / totalDuration) * 100).toFixed(1)
+      percent: totalDuration > 0 ? ((duration / totalDuration) * 100).toFixed(1) : '0.0'
     }));
     
     // 根据当前类型渲染对应的图表
     if (chartType.value === 'bar') {
+      // 如果没有数据,不渲染柱状图
+      if (records.length === 0) {
+        if (chartInstance) {
+          chartInstance.dispose();
+          chartInstance = null;
+        }
+        return;
+      }
       renderBarChart(subjectMap);
       if (pieChartInstance) {
         pieChartInstance.dispose();
         pieChartInstance = null;
       }
     } else {
-      renderPieChart(pieData, totalDuration);
+      // 饼图:即使没有数据也渲染一个空图表
+      if (records.length === 0) {
+        // 渲染一个空的饼图容器,显示提示信息
+        renderPieChart([], 0, true);
+      } else {
+        renderPieChart(pieData, totalDuration, false);
+      }
+      
       if (chartInstance) {
         chartInstance.dispose();
         chartInstance = null;

@@ -41,7 +41,7 @@
       <nav class="py-2">
         <button @click="signOut" class="nav-button w-full">
           <i-carbon-logout class="mr-2 h-4 w-4" />
-          Sign Out
+          退出登录
         </button>
       </nav>
     </div>
@@ -71,19 +71,19 @@ onClickOutside(navContainer, () => {
 /* main navigation links for side drawer */
 const navLinks = [
   {
-    text: "Home",
+    text: "首页",
     to: "/",
     icon: "heroicons-outline:home",
   },
   {
-    text: "Records",
+    text: "学习记录",
     to: "/records",
     icon: "heroicons-outline:document-text",
   },
   {
-    text: "Profile",
-    to: "/profile",
-    icon: "heroicons-outline:user",
+    text: "工作流",
+    to: "/workflow",
+    icon: "heroicons-outline:share",
   },
 ];
 

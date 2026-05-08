@@ -27,14 +27,14 @@ export function useStudyRecords() {
    * 获取当前用户的学习记录
    */
   async function fetchRecords() {
-    const user = supabase.auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data, error } = await supabase
       .from('study_records')
       .select('*')
       .eq('user_id', user.id)
-      .order('date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('获取记录失败:', error);
@@ -49,7 +49,7 @@ export function useStudyRecords() {
   async function addRecord() {
     loading.value = true;
     
-    const user = supabase.auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       alert('请先登录');
       loading.value = false;
@@ -106,6 +106,13 @@ export function useStudyRecords() {
     
     loading.value = true;
     
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert('请先登录');
+      loading.value = false;
+      return;
+    }
+    
     const { error } = await supabase
       .from('study_records')
       .update({
@@ -115,7 +122,7 @@ export function useStudyRecords() {
         notes: editNotes.value,
       })
       .eq('id', editingRecord.value.id)
-      .eq('user_id', supabase.auth.user()?.id);
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('更新记录失败:', error);
@@ -135,7 +142,7 @@ export function useStudyRecords() {
   async function deleteRecord(id: number) {
     if (!confirm('确定要删除这条记录吗?')) return;
     
-    const user = supabase.auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const { error } = await supabase
@@ -163,6 +170,43 @@ export function useStudyRecords() {
     notes.value = '';
   }
 
+  /**
+   * 保存学习笔记（富文本）
+   */
+  async function saveLearningNotes(recordId: number, content: string) {
+    loading.value = true;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert('请先登录');
+      loading.value = false;
+      return;
+    }
+    
+    const { error } = await supabase
+      .from('study_records')
+      .update({
+        learning_notes: content,
+      })
+      .eq('id', recordId)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('保存笔记失败:', error);
+      alert('保存失败: ' + error.message);
+    } else {
+      // 更新本地记录
+      const record = records.value.find(r => r.id === recordId);
+      if (record) {
+        record.learning_notes = content;
+      }
+      alert('笔记保存成功!');
+      await fetchRecords();
+    }
+    
+    loading.value = false;
+  }
+
   return {
     // 状态
     records,
@@ -185,5 +229,6 @@ export function useStudyRecords() {
     saveEdit,
     deleteRecord,
     resetForm,
+    saveLearningNotes, // 新增
   };
 }

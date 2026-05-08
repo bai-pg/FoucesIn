@@ -34,16 +34,18 @@ const router = createRouter({
       component: () => import("@/layouts/AuthLayout.vue"),
       children: [
         {
-          path: "/resetpassword",
-          name: "resetPassword",
+          path: "/reset-password",
+          name: "reset-password",
           component: () => import("@/views/auth/ResetPassword.vue"),
-          beforeEnter: (to) => {
+          meta: { requiresNoAuth: true },
+          beforeEnter: async (to) => {
             // only allow navigation to reset password
             // if we actually clicked a proper reset password link
             // which provides the type=recovery hash key
             if (!to.hash.includes("type=recovery")) {
               const { supabase } = useAuthStore();
-              if (supabase.auth.user()) return "/";
+              const { data } = await supabase.auth.getUser();
+              if (data.user) return "/";
               return "/signin";
             }
           },
@@ -94,18 +96,18 @@ const router = createRouter({
       children: [
         {
           path: "/",
-          name: "home",
-          component: () => import("@/views/HomeView.vue"),
-        },
-        {
-          path: "/profile",
-          name: "profile",
-          component: () => import("@/views/ProfileView.vue"),
+          name: "dashboard",
+          component: () => import("@/views/DashboardView.vue"),
         },
         {
           path: "/records",
           name: "records",
           component: () => import("@/views/RecordsView.vue"),
+        },
+        {
+          path: "/workflow",
+          name: "workflow",
+          component: () => import("@/views/workflow/WorkflowCanvasView.vue"),
         },
       ],
     },
@@ -113,30 +115,78 @@ const router = createRouter({
 });
 
 const { supabase } = useAuthStore(pinia);
-supabase.auth.onAuthStateChange((event) => {
-  console.log(event);
-  if (event == "SIGNED_OUT") return router.push("/signin");
-  if (event == "SIGNED_IN") {
+
+// 缓存用户认证状态，避免每次路由切换都调用 API
+let cachedUser: any = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
+
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('Supabase Auth State Change:', event, session?.user?.id);
+  
+  // 当认证状态变化时，清除缓存
+  if (event === 'SIGNED_OUT') {
+    cachedUser = null;
+    cacheTimestamp = 0;
+    return router.push("/signin");
+  }
+  
+  if (event === 'SIGNED_IN') {
+    // 更新缓存
+    cachedUser = session?.user || null;
+    cacheTimestamp = Date.now();
+    
     const routeName = router.currentRoute.value.name;
     console.log("routeName", routeName);
 
     if (routeName == "callback") {
       setTimeout(() => {
-        return router.push({ name: "home" });
+        return router.push({ name: "dashboard" });
       }, 0);
     }
   }
 });
 
-router.beforeEach((to) => {
-  const { supabase } = useAuthStore();
+router.beforeEach(async (to) => {
+  const now = Date.now();
+  
+  // 检查缓存是否有效
+  const isCacheValid = cachedUser && (now - cacheTimestamp) < CACHE_DURATION;
+  
+  let isAuthenticated = false;
+  
+  if (isCacheValid) {
+    // 使用缓存的用户信息
+    isAuthenticated = !!cachedUser;
+  } else {
+    // Supabase v2: 使用 getUser() 检查登录状态
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      isAuthenticated = !error && !!data.user;
+      
+      // 更新缓存
+      if (isAuthenticated) {
+        cachedUser = data.user;
+        cacheTimestamp = now;
+      } else {
+        cachedUser = null;
+        cacheTimestamp = 0;
+      }
+    } catch (err) {
+      console.error('Supabase 认证检查失败:', err);
+      // 如果认证检查失败，使用缓存或假设为未登录
+      isAuthenticated = !!cachedUser;
+      console.warn('使用缓存的认证状态:', isAuthenticated);
+    }
+  }
 
-  if (to.meta.requiresAuth && !supabase.auth.user()) {
+  if (to.meta.requiresAuth && !isAuthenticated) {
     return {
       path: "/signin",
     };
   }
-  if (to.meta.requiresNoAuth && supabase.auth.user()) {
+  
+  if (to.meta.requiresNoAuth && isAuthenticated) {
     return {
       path: "/",
     };

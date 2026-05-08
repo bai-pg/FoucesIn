@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { breakpointsTailwind } from "@vueuse/core";
+import FloatingChat from "@/components/FloatingChat.vue";
 
 /* after navigation on small screens, close the nav drawer */
 const breakpoints = useBreakpoints(breakpointsTailwind);
@@ -23,10 +24,11 @@ onMounted(() => {
       :class="{ 'lg:pl-64': open }"
     >
       <AppTopBar v-model="open" />
-      <main class="flex-grow overflow-auto px-4 py-2">
+      <main class="flex-grow overflow-auto px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4">
         <router-view />
       </main>
       <AppFooter />
     </div>
+    <FloatingChat />
   </div>
 </template>

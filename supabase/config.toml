@@ -1,0 +1,5 @@
+[functions.ai-proxy]
+verify_jwt = false
+
+[functions.rag-search]
+verify_jwt = true

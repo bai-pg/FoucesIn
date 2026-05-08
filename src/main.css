@@ -1,3 +1,368 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ========== 全局基础样式 ========== */
+
+/* 1. 视口设置优化 */
+html {
+  /* 移动端触摸优化，PC 端不受影响 */
+  @media (max-width: 768px) {
+    touch-action: manipulation;
+    overscroll-behavior: none;
+  }
+}
+
+body {
+  /* 字体渲染优化（所有设备） */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* 禁止文本自动调整大小 */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 2. 安全区域支持（仅移动端） */
+@media (max-width: 768px) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* 3. 移动端点击优化（仅移动端） */
+@media (max-width: 768px) {
+  .tap-highlight-transparent {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* 4. 滚动优化 */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 5. 禁用长按菜单（仅移动端） */
+@media (max-width: 768px) {
+  .no-long-press {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* 6. 移动端表单优化（仅移动端） */
+@media (max-width: 768px) {
+  input, textarea, select {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+  }
+}
+
+/* 7. 图片响应式（所有设备） */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 8. 视频响应式（所有设备） */
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ========== 移动端专用工具类（仅在移动端生效）========== */
+
+@media (max-width: 768px) {
+  /* 9. 移动端卡片优化 */
+  .mobile-card {
+    @apply rounded-lg shadow-sm;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .mobile-card:active {
+    transform: scale(0.98);
+  }
+
+  /* 10. 移动端按钮优化 */
+  .mobile-btn {
+    @apply px-4 py-3 rounded-lg font-medium;
+    min-height: 44px;
+    min-width: 44px;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-btn:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  /* 11. 移动端列表项优化 */
+  .mobile-list-item {
+    @apply px-4 py-3 border-b;
+    min-height: 44px;
+  }
+
+  /* 12. 移动端输入框优化 */
+  .mobile-input {
+    @apply w-full px-4 py-3 rounded-lg;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  /* 13. 移动端模态框背景 */
+  .mobile-modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-50;
+    backdrop-filter: blur(4px);
+  }
+
+  /* 14. 移动端底部固定栏 */
+  .mobile-fixed-bottom {
+    @apply fixed bottom-0 left-0 right-0 z-40;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* 15. 移动端顶部导航栏 */
+  .mobile-header {
+    @apply sticky top-0 z-30;
+    padding-top: env(safe-area-inset-top);
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* ========== 响应式工具类（所有设备）========== */
+
+/* 仅在小屏幕显示 */
+.only-mobile {
+  @apply block sm:hidden;
+}
+
+/* 仅在中等及以上屏幕显示 */
+.only-desktop {
+  @apply hidden sm:block;
+}
+
+/* 移动端网格布局（响应式） */
+.mobile-grid {
+  @apply grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5;
+}
+
+/* 移动端弹性布局（响应式） */
+.mobile-flex {
+  @apply flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3;
+}
+
+/* ========== iPhone X 及小屏幕特殊优化 ========== */
+
+/* iPhone X (375x812) 及更小屏幕 */
+@media (max-width: 375px) and (max-height: 812px) {
+  /* 减小主内容区内边距 */
+  main {
+    padding: 8px !important;
+  }
+  
+  /* 减小卡片内边距 */
+  .el-card__body {
+    padding: 12px !important;
+  }
+  
+  /* 减小标题字体 */
+  h1, .page-title {
+    font-size: 20px !important;
+  }
+  
+  h2, .card-title {
+    font-size: 16px !important;
+  }
+  
+  /* 减小间距 */
+  .dashboard-row {
+    margin-bottom: 10px !important;
+  }
+  
+  /* 优化 Element Plus 组件在小屏幕的显示 */
+  .el-row {
+    margin-bottom: 8px !important;
+  }
+  
+  /* 确保内容可滚动 */
+  .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* iPhone SE 等超小屏幕 (320x568) */
+@media (max-width: 320px) {
+  main {
+    padding: 6px !important;
+  }
+  
+  .el-card__body {
+    padding: 10px !important;
+  }
+  
+  h1, .page-title {
+    font-size: 18px !important;
+  }
+  
+  h2, .card-title {
+    font-size: 14px !important;
+  }
+}
+
+/* ========== Element Plus 深色模式样式覆盖 ========== */
+.dark {
+  /* 卡片背景色 */
+  .el-card {
+    --el-card-bg-color: rgba(30, 41, 59, 0.85) !important;
+    --el-card-border-color: rgba(51, 65, 85, 0.5) !important;
+    --el-card-text-color: #e2e8f0 !important;
+    background-color: rgba(30, 41, 59, 0.85) !important;
+    border-color: rgba(51, 65, 85, 0.5) !important;
+    color: #e2e8f0 !important;
+  }
+
+  .el-card__header {
+    background-color: rgba(30, 41, 59, 0.6) !important;
+    border-bottom-color: rgba(51, 65, 85, 0.5) !important;
+    color: #e2e8f0 !important;
+  }
+
+  .el-card__body {
+    background-color: rgba(30, 41, 59, 0.85) !important;
+    color: #e2e8f0 !important;
+  }
+
+  /* 描述列表（表格）样式 */
+  .el-descriptions {
+    --el-descriptions-table-border-color: rgba(51, 65, 85, 0.5) !important;
+  }
+
+  .el-descriptions__body {
+    background-color: rgba(30, 41, 59, 0.7) !important;
+  }
+
+  .el-descriptions__cell {
+    background-color: rgba(30, 41, 59, 0.7) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(51, 65, 85, 0.5) !important;
+  }
+
+  .el-descriptions__label {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+    color: #cbd5e1 !important;
+  }
+
+  /* 表单样式 */
+  .el-form-item__label {
+    color: #cbd5e1 !important;
+  }
+
+  .el-input__inner {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+    border-color: rgba(71, 85, 105, 0.5) !important;
+    color: #e2e8f0 !important;
+  }
+
+  .el-input__inner:focus {
+    background-color: rgba(51, 65, 85, 0.4) !important;
+    border-color: rgba(99, 102, 241, 0.6) !important;
+  }
+
+  .el-textarea__inner {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+    border-color: rgba(71, 85, 105, 0.5) !important;
+    color: #e2e8f0 !important;
+  }
+
+  .el-textarea__inner:focus {
+    background-color: rgba(51, 65, 85, 0.4) !important;
+    border-color: rgba(99, 102, 241, 0.6) !important;
+  }
+
+  /* 按钮样式调整 */
+  .el-button--default {
+    background-color: rgba(51, 65, 85, 0.5) !important;
+    border-color: rgba(71, 85, 105, 0.5) !important;
+    color: #e2e8f0 !important;
+  }
+
+  .el-button--default:hover {
+    background-color: rgba(71, 85, 105, 0.5) !important;
+    border-color: rgba(100, 116, 139, 0.5) !important;
+  }
+
+  /* 标签页样式 */
+  .el-tabs__header {
+    background-color: rgba(30, 41, 59, 0.6) !important;
+  }
+
+  .el-tabs__content {
+    background-color: rgba(30, 41, 59, 0.85) !important;
+    color: #e2e8f0 !important;
+  }
+
+  .el-tabs__item {
+    color: #94a3b8 !important;
+  }
+
+  .el-tabs__item.is-active {
+    color: #60a5fa !important;
+  }
+
+  /* 进度条样式 */
+  .el-progress-bar__outer {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+  }
+
+  /* 空状态样式 */
+  .el-empty {
+    color: #94a3b8 !important;
+  }
+
+  /* 加载样式 */
+  .el-loading-mask {
+    background-color: rgba(15, 23, 42, 0.8) !important;
+  }
+
+  /* 对话框样式 */
+  .el-dialog {
+    background-color: rgba(30, 41, 59, 0.95) !important;
+    color: #e2e8f0 !important;
+  }
+
+  .el-dialog__header {
+    background-color: rgba(30, 41, 59, 0.6) !important;
+    border-bottom-color: rgba(51, 65, 85, 0.5) !important;
+  }
+
+  .el-dialog__title {
+    color: #e2e8f0 !important;
+  }
+
+  .el-dialog__body {
+    color: #cbd5e1 !important;
+  }
+
+  /* 消息提示样式 */
+  .el-message {
+    background-color: rgba(30, 41, 59, 0.95) !important;
+    border-color: rgba(51, 65, 85, 0.5) !important;
+    color: #e2e8f0 !important;
+  }
+}

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { StudyRecord } from '../types';
+import LearningNotesDialog from './LearningNotesDialog.vue';
+import { ref } from 'vue';
 
 interface Props {
   records: StudyRecord[];
@@ -16,10 +18,15 @@ interface Emits {
   (e: 'delete', id: number): void;
   (e: 'update:pageSize', size: number): void;
   (e: 'go-to-page', page: number): void;
+  (e: 'save-notes', recordId: number, content: string): void;
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+
+// 笔记对话框状态
+const showNotesDialog = ref(false);
+const currentRecord = ref<StudyRecord | null>(null);
 
 function handleToggleCollapse() {
   emit('toggle-collapse');
@@ -40,6 +47,31 @@ function handlePageSizeChange(size: number) {
 function handleGoToPage(page: number) {
   emit('go-to-page', page);
 }
+
+// 打开笔记对话框
+function handleOpenNotes(record: StudyRecord) {
+  currentRecord.value = record;
+  showNotesDialog.value = true;
+}
+
+// 保存笔记
+function handleSaveNotes(recordId: number, content: string) {
+  emit('save-notes', recordId, content);
+}
+
+// 检查是否有笔记
+function hasNotes(record: StudyRecord): boolean {
+  return !!(record.learning_notes && record.learning_notes.trim().length > 0);
+}
+
+// 去除 HTML 标签，获取纯文本
+function stripHtml(html: string | undefined): string {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
+
 </script>
 
 <template>
@@ -86,12 +118,42 @@ function handleGoToPage(page: number) {
                   </span>
                 </div>
                 
-                <div v-if="record.notes" class="text-gray-700 text-sm bg-gray-100 rounded-none px-4 py-2 border-2 border-black shadow-none" style="font-family: 'Press Start 2P', 'Courier New', monospace; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);">
+                <div v-if="record.notes" class="text-gray-700 text-sm bg-gray-100 rounded-none px-4 py-2 border-2 border-black shadow-none mb-3" style="font-family: 'Press Start 2P', 'Courier New', monospace; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);">
                   💬 {{ record.notes }}
+                </div>
+                
+                <!-- 学习笔记预览 -->
+                <div 
+                  v-if="hasNotes(record)" 
+                  class="relative group/notes"
+                >
+                  <div class="text-gray-700 text-xs bg-purple-50 rounded-none px-4 py-2 border-2 border-purple-300 shadow-none overflow-hidden max-h-16" style="font-family: 'Press Start 2P', 'Courier New', monospace; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);">
+                    📝 <span v-html="stripHtml(record.learning_notes!).substring(0, 100)"></span>
+                    <span v-if="stripHtml(record.learning_notes!).length > 100" class="text-purple-600">...</span>
+                  </div>
+                  <div class="absolute inset-0 bg-purple-100 bg-opacity-90 flex items-center justify-center opacity-0 group-hover/notes:opacity-100 transition-opacity cursor-pointer" @click="handleOpenNotes(record)">
+                    <span class="text-purple-700 font-bold text-xs" style="font-family: 'Press Start 2P', 'Courier New', monospace;">点击查看完整笔记 →</span>
+                  </div>
                 </div>
               </div>
               
               <div class="flex gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <!-- 笔记按钮 -->
+                <button
+                  @click="handleOpenNotes(record)"
+                  class="relative bg-purple-500 text-white px-3 py-2 rounded-none border-2 border-black hover:bg-purple-600 active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-none"
+                  style="box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3); font-family: 'Press Start 2P', 'Courier New', monospace;"
+                  :title="hasNotes(record) ? '编辑学习笔记' : '添加学习笔记'"
+                >
+                  📝
+                  <!-- 有笔记时显示高亮标记 -->
+                  <span 
+                    v-if="hasNotes(record)"
+                    class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border-2 border-black animate-pulse"
+                    style="box-shadow: 0 0 4px rgba(250, 204, 21, 0.6);"
+                  ></span>
+                </button>
+                
                 <button
                   @click="handleEdit(record)"
                   class="bg-blue-500 text-white px-3 py-2 rounded-none border-2 border-black hover:bg-blue-600 active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-none"
@@ -189,5 +251,16 @@ function handleGoToPage(page: number) {
         </div>
       </div>
     </div>
+    
+    <!-- 学习笔记对话框 -->
+    <LearningNotesDialog
+      v-if="currentRecord"
+      v-model="showNotesDialog"
+      :record-id="currentRecord.id"
+      :subject="currentRecord.subject"
+      :date="currentRecord.date"
+      :content="currentRecord.learning_notes || ''"
+      @save="handleSaveNotes"
+    />
   </div>
 </template>
