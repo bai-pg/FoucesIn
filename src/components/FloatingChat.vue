@@ -57,7 +57,6 @@ const floatBtnRef = ref<HTMLElement | null>(null);
 
 // 拖动相关状态
 const isDragging = ref(false);
-const hasMoved = ref(false); // 新增：记录是否真的移动过
 const buttonPosition = ref({
   bottom: '24px',
   right: '24px',
@@ -68,7 +67,6 @@ let dragStartX = 0;
 let dragStartY = 0;
 let initialRight = 24;
 let initialBottom = 24;
-const MOVE_THRESHOLD = 5; // 移动阈值，超过这个距离才算拖动
 
 // 将 store 中的消息格式化为 Deep Chat 需要的格式
 const formattedMessages = computed(() => {
@@ -125,7 +123,6 @@ const handleNewMessage = (message: any) => {
 // 鼠标拖动开始
 const startDrag = (e: MouseEvent) => {
   isDragging.value = true;
-  hasMoved.value = false; // 重置移动标志
   dragStartX = e.clientX;
   dragStartY = e.clientY;
   
@@ -150,11 +147,6 @@ const onDrag = (e: MouseEvent) => {
   
   const deltaX = e.clientX - dragStartX;
   const deltaY = e.clientY - dragStartY;
-  
-  // 如果移动距离超过阈值，标记为已移动
-  if (Math.abs(deltaX) > MOVE_THRESHOLD || Math.abs(deltaY) > MOVE_THRESHOLD) {
-    hasMoved.value = true;
-  }
   
   // 计算新位置
   const newRight = initialRight - deltaX;
@@ -194,11 +186,8 @@ const startDragTouch = (e: TouchEvent) => {
 
 // 处理点击事件（区分拖动和点击）
 const handleClick = (e: MouseEvent) => {
-  // 如果发生了移动（拖动），不触发打开聊天
-  if (hasMoved.value) {
-    hasMoved.value = false; // 重置标志
-    return;
-  }
+  // 如果是拖动操作，不触发打开聊天
+  if (isDragging.value) return;
   openChat();
 };
 
