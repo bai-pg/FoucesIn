@@ -27,7 +27,6 @@ onMounted(() => {
       <main class="flex-grow overflow-auto px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4">
         <router-view />
       </main>
-      <AppFooter />
     </div>
     <FloatingChat />
   </div>

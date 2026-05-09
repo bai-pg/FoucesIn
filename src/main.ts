@@ -28,11 +28,4 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.use(router).use(pinia).use(VWave, {}).use(ElementPlus);
 
-// 延迟加载 Purge Icons，避免阻塞首屏渲染
-import("@purge-icons/generated").then(() => {
-  console.log('Purge Icons loaded');
-}).catch(err => {
-  console.warn('Failed to load Purge Icons:', err);
-});
-
 app.mount("#app");

@@ -19,9 +19,7 @@
     >
       <nav class="py-2">
         <span class="nav-button">
-          Vuepabase
-          <i-simple-icons-vuedotjs class="ml-2 h-4 w-4" />
-          <i-simple-icons-supabase class="ml-2 h-4 w-4" />
+          bpg
         </span>
       </nav>
 
@@ -96,7 +94,10 @@ async function signOut() {
 <style scoped>
 .nav-container {
   background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-    url("https://images.unsplash.com/photo-1632213702844-1e0615781374?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1632&q=80");
+    url('@/assets/images/hua.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .nav-button {
